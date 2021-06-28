@@ -9,78 +9,25 @@ using Org.BouncyCastle.Bcpg.Sig;
 
 namespace JetBrains.DownloadVerifier
 {
-  public static class KeysUtil
+  public static class PgpSignaturesVerifier
   {
-    [NotNull]
-    public static PgpPublicKey GetTrustedMasterPublicKey([NotNull] Stream stream)
-    {
-      if (stream == null) throw new ArgumentNullException(nameof(stream));
-      using var decodedStream = PgpUtilities.GetDecoderStream(stream);
-      var bundle = new PgpPublicKeyRingBundle(decodedStream);
-      var ring = bundle.GetKeyRings().Cast<PgpPublicKeyRing>().SingleOrDefault() ?? throw new Exception("Only one key ring is expected");
-      var publicKey = ring.GetPublicKeys().Cast<PgpPublicKey>().SingleOrDefault() ?? throw new Exception("Only one public key is expected");
-      if (!publicKey.IsMasterKey)
-        throw new Exception($"Master key is required. KeyID={publicKey.KeyId:X16}");
-      CheckPublicKeyFormat(publicKey, err => throw new Exception(err));
-      return publicKey;
-    }
-
-    [NotNull]
-    public static PgpPublicKeyRingBundle GetUntrustedPublicKeyRingBundle([NotNull] Stream stream)
-    {
-      if (stream == null) throw new ArgumentNullException(nameof(stream));
-      using var decodedStream = PgpUtilities.GetDecoderStream(stream);
-      return new PgpPublicKeyRingBundle(decodedStream);
-    }
-
-    [NotNull]
-    public static IEnumerable<PgpSignature> GetSignatures([NotNull] Stream stream)
-    {
-      static IEnumerable<PgpSignature> ToEnumerable(PgpSignatureList list)
-      {
-        return Enumerable.Range(0, list.Count).Select(x => list[x]).ToList();
-      }
-
-      using var decodedStream = PgpUtilities.GetDecoderStream(stream);
-      var factory = new PgpObjectFactory(decodedStream);
-      for (PgpObject obj; (obj = factory.NextPgpObject()) != null;)
-        switch (obj)
-        {
-        case PgpCompressedData data:
-          using (var dataStream = data.GetDataStream())
-          {
-            var factory2 = new PgpObjectFactory(dataStream);
-            for (PgpObject obj2; (obj2 = factory2.NextPgpObject()) != null;)
-              if (obj2 is PgpSignatureList list)
-                return ToEnumerable(list);
-          }
-
-          break;
-        case PgpSignatureList list:
-          return ToEnumerable(list);
-        }
-
-      throw new Exception("No PGP signature was found");
-    }
-
     public static bool Verify(
-      [NotNull] PgpPublicKey masterPublicKey,
-      [NotNull] PgpPublicKeyRingBundle publicKeyRingBundle,
-      [NotNull] IEnumerable<PgpSignature> signatures,
+      [NotNull] Stream masterPublicKeyStream,
+      [NotNull] Stream publicKeysStream,
+      [NotNull] Stream signaturesStream,
       [NotNull] Stream dataStream,
       [NotNull] ILogger logger)
     {
-      if (masterPublicKey == null) throw new ArgumentNullException(nameof(masterPublicKey));
-      if (publicKeyRingBundle == null) throw new ArgumentNullException(nameof(publicKeyRingBundle));
-      if (signatures == null) throw new ArgumentNullException(nameof(signatures));
       if (dataStream == null) throw new ArgumentNullException(nameof(dataStream));
       if (logger == null) throw new ArgumentNullException(nameof(logger));
       var pos = dataStream.CanSeek ? dataStream.Position : throw new ArgumentException("The data stream must be seek-able", nameof(dataStream));
       logger.Info("Verify data");
+
+      var masterPublicKey = GetTrustedMasterPublicKey(masterPublicKeyStream);
+      var publicKeyRingBundle = GetUntrustedPublicKeyRingBundle(publicKeysStream);
       var buffer = new byte[16 * 1024];
-      foreach (var signature in signatures)
-        if (signature.SignatureType == PgpSignature.BinaryDocument ||
-            signature.SignatureType == PgpSignature.CanonicalTextDocument)
+      foreach (var signature in GetSignatures(signaturesStream))
+        if (signature.SignatureType is PgpSignature.BinaryDocument or PgpSignature.CanonicalTextDocument)
         {
           if (!CheckSignatureFormat(signature, x => logger.Warning("The signature was skipped: " + x)))
             continue;
@@ -119,6 +66,58 @@ namespace JetBrains.DownloadVerifier
 
       logger.Error("Failed to verify signature");
       return false;
+    }
+
+    [NotNull]
+    private static PgpPublicKey GetTrustedMasterPublicKey([NotNull] Stream stream)
+    {
+      if (stream == null) throw new ArgumentNullException(nameof(stream));
+      using var decodedStream = PgpUtilities.GetDecoderStream(stream);
+      var bundle = new PgpPublicKeyRingBundle(decodedStream);
+      var ring = bundle.GetKeyRings().Cast<PgpPublicKeyRing>().SingleOrDefault() ?? throw new Exception("Only one key ring is expected");
+      var publicKey = ring.GetPublicKeys().Cast<PgpPublicKey>().SingleOrDefault() ?? throw new Exception("Only one public key is expected");
+      if (!publicKey.IsMasterKey)
+        throw new Exception($"Master key is required. KeyID={publicKey.KeyId:X16}");
+      CheckPublicKeyFormat(publicKey, err => throw new Exception(err));
+      return publicKey;
+    }
+
+    [NotNull]
+    private static PgpPublicKeyRingBundle GetUntrustedPublicKeyRingBundle([NotNull] Stream stream)
+    {
+      if (stream == null) throw new ArgumentNullException(nameof(stream));
+      using var decodedStream = PgpUtilities.GetDecoderStream(stream);
+      return new PgpPublicKeyRingBundle(decodedStream);
+    }
+
+    [NotNull]
+    private static IEnumerable<PgpSignature> GetSignatures([NotNull] Stream stream)
+    {
+      static IEnumerable<PgpSignature> ToEnumerable(PgpSignatureList list)
+      {
+        return Enumerable.Range(0, list.Count).Select(x => list[x]).ToList();
+      }
+
+      using var decodedStream = PgpUtilities.GetDecoderStream(stream);
+      var factory = new PgpObjectFactory(decodedStream);
+      for (PgpObject obj; (obj = factory.NextPgpObject()) != null;)
+        switch (obj)
+        {
+        case PgpCompressedData data:
+          using (var dataStream = data.GetDataStream())
+          {
+            var factory2 = new PgpObjectFactory(dataStream);
+            for (PgpObject obj2; (obj2 = factory2.NextPgpObject()) != null;)
+              if (obj2 is PgpSignatureList list)
+                return ToEnumerable(list);
+          }
+
+          break;
+        case PgpSignatureList list:
+          return ToEnumerable(list);
+        }
+
+      throw new Exception("No PGP signature was found");
     }
 
     private static bool CheckRevoked(PgpPublicKey publicKey, PgpSignature signature, Action<string> onError)

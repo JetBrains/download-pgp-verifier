@@ -2,12 +2,20 @@
 using System.IO;
 using System.Net;
 using System.Reflection;
+using System.Text;
 using JetBrains.Annotations;
 
 namespace JetBrains.DownloadVerifier
 {
-  public static class StreamFromUtil
+  public static class OpenStreamUtil
   {
+    public static TResult OpenStreamFromString<TResult>([NotNull] this string str, [NotNull] Func<Stream, TResult> handler)
+    {
+      if (handler == null) throw new ArgumentNullException(nameof(handler));
+      using var stream = new MemoryStream(Encoding.UTF8.GetBytes(str), false);
+      return handler(stream);
+    }
+
     public static TResult OpenStreamFromResource<TResult>([NotNull] this Assembly assembly, [NotNull] string resourceName, [NotNull] Func<Stream, TResult> handler)
     {
       if (assembly == null) throw new ArgumentNullException(nameof(assembly));

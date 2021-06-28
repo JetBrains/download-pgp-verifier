@@ -1,11 +1,24 @@
 ﻿using System;
-using Org.BouncyCastle.Bcpg.OpenPgp;
+using System.IO;
+using System.Text;
+using JetBrains.Annotations;
 
 namespace JetBrains.DownloadVerifier
 {
   public static class Constants
   {
-    public static readonly PgpPublicKey MasterPublicKey = typeof(KeysUtil).Assembly.OpenStreamFromResource(typeof(KeysUtil).Namespace + ".Resources.real-master-public-key.asc", KeysUtil.GetTrustedMasterPublicKey);
+    public static readonly string MasterPublicKey = GetMasterPublicKey();
     public static readonly Uri PublicKeysUri = new("https://download.jetbrains.com/KEYS");
+
+    [NotNull]
+    private static string GetMasterPublicKey()
+    {
+      var type = typeof(PgpSignaturesVerifier);
+      return type.Assembly.OpenStreamFromResource(type.Namespace + ".Resources.real-master-public-key.asc", stream =>
+        {
+          using var reader = new StreamReader(stream, Encoding.ASCII);
+          return reader.ReadToEnd();
+        });
+    }
   }
 }
