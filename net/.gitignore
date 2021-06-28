@@ -1,0 +1,8 @@
+.vs/
+.idea/
+_ReSharper.Caches/
+obj/
+bin/
+packages/
+*.user
+*.Snk
