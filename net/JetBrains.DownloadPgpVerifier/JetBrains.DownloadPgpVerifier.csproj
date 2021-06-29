@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>JetBrains.DownloadVerifier</RootNamespace>
-    <AssemblyName>JetBrains.DownloadVerifier</AssemblyName>
+    <RootNamespace>JetBrains.DownloadPgpVerifier</RootNamespace>
+    <AssemblyName>JetBrains.DownloadPgpVerifier</AssemblyName>
     <LangVersion>latestmajor</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <SignAssembly>true</SignAssembly>

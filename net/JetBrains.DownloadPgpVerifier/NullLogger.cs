@@ -1,4 +1,4 @@
-﻿namespace JetBrains.DownloadVerifier
+﻿namespace JetBrains.DownloadPgpVerifier
 {
   public sealed class NullLogger : ILogger
   {

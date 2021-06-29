@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using JetBrains.Annotations;
 using Org.BouncyCastle.Bcpg;
 using Org.BouncyCastle.Bcpg.OpenPgp;
 using Org.BouncyCastle.Bcpg.Sig;
 
-namespace JetBrains.DownloadVerifier
+namespace JetBrains.DownloadPgpVerifier
 {
   public static class PgpSignaturesVerifier
   {
+    public static readonly string MasterPublicKey = LoadMasterPublicKeyFromResources();
+    public static readonly Uri PublicKeysUri = new("https://download.jetbrains.com/KEYS");
+
     public static bool Verify(
       [NotNull] Stream masterPublicKeyStream,
       [NotNull] Stream publicKeysStream,
@@ -21,7 +25,7 @@ namespace JetBrains.DownloadVerifier
       if (dataStream == null) throw new ArgumentNullException(nameof(dataStream));
       if (logger == null) throw new ArgumentNullException(nameof(logger));
       var pos = dataStream.CanSeek ? dataStream.Position : throw new ArgumentException("The data stream must be seek-able", nameof(dataStream));
-      logger.Info("Verify data");
+      logger.Info("Verify");
 
       var masterPublicKey = GetTrustedMasterPublicKey(masterPublicKeyStream);
       var publicKeyRingBundle = GetUntrustedPublicKeyRingBundle(publicKeysStream);
@@ -192,6 +196,17 @@ namespace JetBrains.DownloadVerifier
       }
 
       return true;
+    }
+
+    [NotNull]
+    private static string LoadMasterPublicKeyFromResources()
+    {
+      var type = typeof(PgpSignaturesVerifier);
+      return type.Assembly.OpenStreamFromResource(type.Namespace + ".Resources.real-master-public-key.asc", stream =>
+        {
+          using var reader = new StreamReader(stream, Encoding.ASCII);
+          return reader.ReadToEnd();
+        });
     }
   }
 }

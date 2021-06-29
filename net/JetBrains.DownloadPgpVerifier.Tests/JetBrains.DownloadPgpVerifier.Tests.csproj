@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
-    <RootNamespace>JetBrains.DownloadVerifier.Tests</RootNamespace>
+    <RootNamespace>JetBrains.DownloadPgpVerifier.Tests</RootNamespace>
     <IsPackable>false</IsPackable>
     <LangVersion>latestmajor</LangVersion>
   </PropertyGroup>
@@ -9,7 +9,7 @@
     <PackageReference Include="NUnit" Version="3.13.2" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
-    <ProjectReference Include="..\JetBrains.DownloadVerifier\JetBrains.DownloadVerifier.csproj" />
+    <ProjectReference Include="..\JetBrains.DownloadPgpVerifier\JetBrains.DownloadPgpVerifier.csproj" />
     <EmbeddedResource Include="..\..\data\*" LinkBase="Resources" />
   </ItemGroup>
 </Project>

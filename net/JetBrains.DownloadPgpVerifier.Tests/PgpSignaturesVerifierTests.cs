@@ -5,7 +5,7 @@ using System.Text;
 using JetBrains.Annotations;
 using NUnit.Framework;
 
-namespace JetBrains.DownloadVerifier.Tests
+namespace JetBrains.DownloadPgpVerifier.Tests
 {
   [SuppressMessage("ReSharper", "InconsistentNaming")]
   public class PgpSignaturesVerifierTests
@@ -78,7 +78,7 @@ namespace JetBrains.DownloadVerifier.Tests
     [Test]
     public void EqualMasterPublicKeyTest()
     {
-      Assert.AreEqual(Constants.MasterPublicKey, StreamFromResource(RealMasterPublicKey, stream =>
+      Assert.AreEqual(PgpSignaturesVerifier.MasterPublicKey, StreamFromResource(RealMasterPublicKey, stream =>
         {
           using var reader = new StreamReader(stream, Encoding.ASCII);
           return reader.ReadToEnd();
@@ -92,8 +92,8 @@ namespace JetBrains.DownloadVerifier.Tests
     [TestCase(RealSignature0Asc, FailData, false)]
     public void DownloadVerifyTest(string signatureResourceName, string dataResourceName, bool expectedResult)
     {
-      var result = Constants.MasterPublicKey.OpenStreamFromString(
-        masterPublicKeyStream => Constants.PublicKeysUri.OpenStreamFromWeb(
+      var result = PgpSignaturesVerifier.MasterPublicKey.OpenStreamFromString(
+        masterPublicKeyStream => PgpSignaturesVerifier.PublicKeysUri.OpenSeekableStreamFromWeb(
           publicKeysStream => StreamFromResource(signatureResourceName,
             signaturesStream => StreamFromResource(dataResourceName,
               dataStream => PgpSignaturesVerifier.Verify(masterPublicKeyStream, publicKeysStream, signaturesStream, dataStream, ConsoleLogger.Instance)))));

@@ -1,6 +1,6 @@
 ﻿using JetBrains.Annotations;
 
-namespace JetBrains.DownloadVerifier
+namespace JetBrains.DownloadPgpVerifier
 {
   public interface ILogger
   {

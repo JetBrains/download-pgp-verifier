@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using JetBrains.Annotations;
 
-namespace JetBrains.DownloadVerifier
+namespace JetBrains.DownloadPgpVerifier
 {
   public static class OpenStreamUtil
   {
@@ -35,10 +35,18 @@ namespace JetBrains.DownloadVerifier
       using var responseStream = response.GetResponseStream();
       if (responseStream == null)
         throw new InvalidOperationException($"Failed to open response stream for {uri}");
-      using var fileStream = new FileStream(Path.GetTempFileName(), FileMode.Create, FileAccess.ReadWrite, FileShare.None, 8192, FileOptions.DeleteOnClose | FileOptions.RandomAccess);
-      responseStream.CopyTo(fileStream);
-      fileStream.Position = 0;
-      return handler(fileStream);
+      return handler(responseStream);
+    }
+
+    public static TResult OpenSeekableStreamFromWeb<TResult>([NotNull] this Uri uri, [NotNull] Func<Stream, TResult> handler)
+    {
+      return uri.OpenStreamFromWeb(responseStream =>
+        {
+          using var fileStream = File.Create(Path.GetTempFileName(), 8192, FileOptions.DeleteOnClose);
+          responseStream.CopyTo(fileStream);
+          fileStream.Position = 0;
+          return handler(fileStream);
+        });
     }
   }
 }

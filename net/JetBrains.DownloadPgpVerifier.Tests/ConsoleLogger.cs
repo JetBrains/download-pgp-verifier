@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JetBrains.DownloadVerifier.Tests
+namespace JetBrains.DownloadPgpVerifier.Tests
 {
   internal sealed class ConsoleLogger : ILogger
   {
