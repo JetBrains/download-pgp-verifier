@@ -1,0 +1,89 @@
+buildscript {
+    ext.kotlin_version = '1.5.20'
+
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.bouncycastle:bcpg-jdk15on:1.69'
+    implementation 'org.slf4j:slf4j-api:1.7.31'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    testImplementation('ch.qos.logback:logback-classic:1.2.3')
+    def junitVersion = "5.7.0"
+    testImplementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
+}
+
+
+group = 'com.jetbrains.infra'
+//project.archivesBaseName("download-pgp-verifier")
+
+apply plugin: 'maven-publish'
+
+task sourceJar(type: Jar) {
+    subprojects {
+        from sourceSets.main.kotlin
+    }
+}
+task mainJar(type: Jar) {
+    subprojects {
+        dependsOn it.classes
+    }
+    subprojects {
+        from it.sourceSets.main.output
+    }
+}
+artifacts {
+    archives sourceJar, mainJar
+}
+
+test {
+    useJUnitPlatform()
+}
+
+/*
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact mainJar
+            artifact sourceJar {
+                classifier "sources"
+            }
+
+            //the standard components.java doesn't work for multiple artifacts so we need to define dependencies manually
+            pom.withXml {
+                def dependenciesNode = asNode().appendNode('dependencies')
+                rootProject.subprojects { project ->
+                  project.configurations.compile.allDependencies.each {
+                      if (!it.name.startsWith("teamcity-rest-client")) {
+                        def dependencyNode = dependenciesNode.appendNode('dependency')
+                        dependencyNode.appendNode('groupId', it.group)
+                        dependencyNode.appendNode('artifactId', it.name)
+                        dependencyNode.appendNode('version', it.version)
+                      }
+                  }
+                }
+            }
+        }
+    }
+}
+*/
+
+wrapper {
+    gradleVersion = '7.1'
+    distributionUrl = "https://cache-redirector.jetbrains.com/services.gradle.org/distributions/gradle-${gradleVersion}-bin.zip"
+}
