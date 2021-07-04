@@ -72,7 +72,7 @@ object PgpSignaturesVerifier {
             //  - our content was indeed signed by untrusted key `key`
             // `- key` and `signature` are good enough
             //  - key is signed by our trusted primary key
-
+            //  - key was not revoked before making `signature`
             verified = true
         }
 
