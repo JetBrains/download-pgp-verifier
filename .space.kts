@@ -8,7 +8,22 @@ job("Build and run tests") {
     container("openjdk:11") {
         workDir = "jvm"
         kotlinScript { api ->
-            api.gradlew("build")
+            api.gradlew("--info", "build")
+        }
+    }
+}
+
+job("Publish to maven repository") {
+    startOn {
+        gitPush {
+            enabled = false
+        }
+    }
+
+    container("openjdk:11") {
+        workDir = "jvm"
+        kotlinScript { api ->
+            api.gradlew("--info", "publish")
         }
     }
 }
