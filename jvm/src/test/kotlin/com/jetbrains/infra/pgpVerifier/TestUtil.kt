@@ -1,4 +1,4 @@
-
+package com.jetbrains.infra.pgpVerifier
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -12,6 +12,8 @@ object TestUtil {
         }
         return testDataFile
     }
+
+    fun getTestDataBytes(name: String): ByteArray = Files.readAllBytes(getTestDataFile(name))
 
     private fun getProjectRootFromWorkingDirectory(): Path {
         val workingDirectory = Paths.get(System.getProperty("user.dir"))

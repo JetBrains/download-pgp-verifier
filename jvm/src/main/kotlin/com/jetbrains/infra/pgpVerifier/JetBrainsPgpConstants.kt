@@ -2,6 +2,7 @@ package com.jetbrains.infra.pgpVerifier
 
 object JetBrainsPgpConstants {
     // download@jetbrains.com key
+    @Suppress("SpellCheckingInspection")
     internal val JETBRAINS_DOWNLOADS_PGP_MASTER_PUBLIC_KEY = """
       -----BEGIN PGP PUBLIC KEY BLOCK-----
       
@@ -37,5 +38,5 @@ object JetBrainsPgpConstants {
       -----END PGP PUBLIC KEY BLOCK-----
     """.trimIndent()
 
-    val JETBRAINS_DOWNLOADS_PGP_SUB_KEYS_URL = "https://download.jetbrains.com/KEYS"
+    const val JETBRAINS_DOWNLOADS_PGP_SUB_KEYS_URL = "https://download.jetbrains.com/KEYS"
 }

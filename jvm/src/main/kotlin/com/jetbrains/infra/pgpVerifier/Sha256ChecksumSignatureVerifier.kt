@@ -9,7 +9,7 @@ import java.security.MessageDigest
 
 
 object Sha256ChecksumSignatureVerifier {
-    private val sha256WithFileNameRegex = Regex("([0-9a-f]{64})([\t *]+)([a-zA-Z0-9_\\-.*]+)\\s*")
+    private val sha256WithFileNameRegex = Regex("([0-9a-f]{64})[\t ]+\\*?([a-zA-Z0-9_\\-.*]+)\\s*")
 
     private fun getHashFromChecksumFile(detachedSignatureFile: Path, checksumFile: Path, expectedFileName: String, untrustedPublicKeyRing: InputStream, trustedMasterKey: InputStream): String {
         Files.newInputStream(detachedSignatureFile).use { signatureStream ->
@@ -23,7 +23,7 @@ object Sha256ChecksumSignatureVerifier {
 
         val text = Files.readString(checksumFile)
         val match = sha256WithFileNameRegex.matchEntire(text) ?: error("Checksum file does not match regex '$sha256WithFileNameRegex': ~~~$text~~~")
-        val actualFileName = match.groupValues[3]
+        val actualFileName = match.groupValues[2]
 
         if (actualFileName != expectedFileName) {
             error("Expected file name '$expectedFileName', but got '$actualFileName' in checksum file: ~~~$text~~~")
@@ -65,7 +65,7 @@ object Sha256ChecksumSignatureVerifier {
                 val count = it.read(buf)
                 if (count <= 0) break
 
-                digest.update(buf)
+                digest.update(buf, 0, count)
             }
         }
         return digest.digest()

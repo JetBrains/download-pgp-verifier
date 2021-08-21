@@ -1,5 +1,5 @@
-import com.jetbrains.infra.pgpVerifier.JetBrainsPgpConstants
-import com.jetbrains.infra.pgpVerifier.PgpSignaturesVerifier
+package com.jetbrains.infra.pgpVerifier
+
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -48,7 +48,7 @@ class PgpSignatureVerifierTest {
         val data = TestUtil.getTestDataFile(dataResourceName)
 
         Files.newInputStream(signature).use { signatureStream ->
-            ByteArrayInputStream(realKeys).use { publicKeysStream ->
+            ByteArrayInputStream(realSubKeys).use { publicKeysStream ->
                 ByteArrayInputStream(JetBrainsPgpConstants.JETBRAINS_DOWNLOADS_PGP_MASTER_PUBLIC_KEY.toByteArray()).use { masterPublicKeyStream ->
                     val result = try {
                         PgpSignaturesVerifier.verifySignature(
@@ -77,7 +77,7 @@ class PgpSignatureVerifierTest {
     }
 
     companion object {
-        private val realKeys: ByteArray by lazy {
+        val realSubKeys: ByteArray by lazy {
             URL(JetBrainsPgpConstants.JETBRAINS_DOWNLOADS_PGP_SUB_KEYS_URL).openStream().use { it.readAllBytes() }
         }
 
@@ -85,7 +85,7 @@ class PgpSignatureVerifierTest {
         private const val TestMasterPublicKey = "test-master-public-key.asc"
         private const val FailMasterPublicKey = "fail-master-public-key.asc"
 
-        private const val RealPublicKeys = "real-public-keys.asc"
+        const val RealPublicKeys = "real-public-keys.asc"
         private const val TestNoRevokePublicKeys = "test-no-revoke-public-keys.asc"
         private const val TestTwoRevokePublicKeys = "test-two-revoke-public-keys.asc"
 
