@@ -1,8 +1,6 @@
 package com.jetbrains.infra.pgpVerifier
 
-import java.io.ByteArrayInputStream
 import java.io.InputStream
-import java.net.URL
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
@@ -32,8 +30,10 @@ object Sha256ChecksumSignatureVerifier {
         return match.groupValues[1]
     }
 
-    fun verifyChecksumAndSignature(file: Path, detachedSignatureFile: Path, checksumFile: Path, expectedFileName: String,
-                                   untrustedPublicKeyRing: InputStream, trustedMasterKey: InputStream) {
+    fun verifyChecksumAndSignature(
+        file: Path, detachedSignatureFile: Path, checksumFile: Path, expectedFileName: String,
+        untrustedPublicKeyRing: InputStream, trustedMasterKey: InputStream
+    ) {
         val expectedHash = getHashFromChecksumFile(
             detachedSignatureFile = detachedSignatureFile,
             checksumFile = checksumFile,
@@ -69,17 +69,5 @@ object Sha256ChecksumSignatureVerifier {
             }
         }
         return digest.digest()
-    }
-
-    @JvmStatic
-    fun main(args: Array<String>) {
-        verifyChecksumAndSignature(
-            file = Path.of("/home/shalupov/tmp/apache-maven-3.6.3-bin.zip"),
-            detachedSignatureFile = Path.of("/home/shalupov/tmp/apache-maven-3.6.3-bin.zip.sha256.asc"),
-            checksumFile = Path.of("/home/shalupov/tmp/apache-maven-3.6.3-bin.zip.sha256"),
-            expectedFileName = "apache-maven-3.6.3-bin.zip",
-            untrustedPublicKeyRing = ByteArrayInputStream(URL("https://download.labs.intellij.net/KEYS").openStream().use { it.readAllBytes() }),
-            trustedMasterKey = ByteArrayInputStream(JetBrainsPgpConstants.JETBRAINS_DOWNLOADS_PGP_MASTER_PUBLIC_KEY.toByteArray()),
-        )
     }
 }
