@@ -29,9 +29,9 @@ namespace JetBrains.DownloadPgpVerifier
     public static TResult OpenStreamFromWeb<TResult>([NotNull] this Uri uri, [NotNull] Func<Stream, TResult> handler)
     {
       if (handler == null) throw new ArgumentNullException(nameof(handler));
-      var request = (HttpWebRequest) WebRequest.Create(uri);
+      var request = WebRequest.Create(uri);
       request.Method = WebRequestMethods.Http.Get;
-      using var response = (HttpWebResponse) request.GetResponse();
+      using var response = request.GetResponse();
       using var responseStream = response.GetResponseStream();
       if (responseStream == null)
         throw new InvalidOperationException($"Failed to open response stream for {uri}");
