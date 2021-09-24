@@ -59,6 +59,7 @@ class Sha256ChecksumSignatureVerifierTest {
             expectedFileName = "lorem-ipsum.txt",
             untrustedPublicKeyRing = ByteArrayInputStream(TestUtil.getTestDataBytes(PgpSignatureVerifierTest.RealPublicKeys)),
             trustedMasterKey = ByteArrayInputStream(JetBrainsPgpConstants.JETBRAINS_DOWNLOADS_PGP_MASTER_PUBLIC_KEY.toByteArray()),
+            logger = TestPgpSignaturesVerifierLogger,
         )
     }
 }

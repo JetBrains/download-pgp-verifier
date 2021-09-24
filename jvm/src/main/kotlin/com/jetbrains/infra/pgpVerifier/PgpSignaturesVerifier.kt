@@ -16,7 +16,6 @@ import org.bouncycastle.openpgp.PGPUtil
 import org.bouncycastle.openpgp.jcajce.JcaPGPObjectFactory
 import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator
 import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentVerifierBuilderProvider
-import org.slf4j.LoggerFactory
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
@@ -24,13 +23,13 @@ import java.nio.file.Path
 
 object PgpSignaturesVerifier {
     private val bouncyCastleProvider = BouncyCastleProvider()
-    private val logger = LoggerFactory.getLogger(javaClass)
 
     fun verifySignature(
         file: Path,
         detachedSignatureInputStream: InputStream,
         untrustedPublicKeyBundleInputStream: InputStream,
-        trustedMasterKeyInputStream: InputStream
+        trustedMasterKeyInputStream: InputStream,
+        logger: PgpSignaturesVerifierLogger,
     ) {
         val signatures = getSignaturesFromFile(detachedSignatureInputStream)
         val untrustedPublicKeyRingCollection = PGPPublicKeyRingCollection(
@@ -55,7 +54,7 @@ object PgpSignaturesVerifier {
                 logger.info("Key skipped: $keyCheckError")
                 continue
             }
-            if (!isSubKeyForSigning(key, trustedMasterKey)) {
+            if (!isSubKeyForSigning(key, trustedMasterKey, logger)) {
                 continue
             }
             if (isRevoked(key, signature)) {
@@ -136,7 +135,7 @@ object PgpSignaturesVerifier {
         return false
     }
 
-    private fun isSubKeyForSigning(subKey: PGPPublicKey, masterKey: PGPPublicKey): Boolean {
+    private fun isSubKeyForSigning(subKey: PGPPublicKey, masterKey: PGPPublicKey, logger: PgpSignaturesVerifierLogger): Boolean {
         require(masterKey.isMasterKey) { "Key ${masterKey.keyID.toKeyIdString()} must be a master key" }
         require(!subKey.isMasterKey) { "Key ${subKey.keyID.toKeyIdString()} must be a sub key" }
 

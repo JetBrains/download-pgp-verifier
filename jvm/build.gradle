@@ -19,10 +19,8 @@ repositories {
 
 dependencies {
     implementation 'org.bouncycastle:bcpg-jdk15on:1.69'
-    implementation 'org.slf4j:slf4j-api:1.7.32'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    testImplementation('ch.qos.logback:logback-classic:1.2.5')
     def junitVersion = "5.7.2"
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"

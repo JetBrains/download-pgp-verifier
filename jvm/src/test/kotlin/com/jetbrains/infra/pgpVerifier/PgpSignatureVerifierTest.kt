@@ -46,6 +46,7 @@ class PgpSignatureVerifierTest {
                             detachedSignatureInputStream = signatureStream,
                             untrustedPublicKeyBundleInputStream = publicKeysStream,
                             trustedMasterKeyInputStream = ByteArrayInputStream(masterPublicKeyOnlyArmoredBytes),
+                            logger = TestPgpSignaturesVerifierLogger,
                         )
                         true
                     } catch (_: Throwable) {
@@ -73,6 +74,7 @@ class PgpSignatureVerifierTest {
                             detachedSignatureInputStream = signatureStream,
                             untrustedPublicKeyBundleInputStream = publicKeysStream,
                             trustedMasterKeyInputStream = masterPublicKeyStream,
+                            logger = TestPgpSignaturesVerifierLogger,
                         )
                         true
                     } catch (_: Throwable) {

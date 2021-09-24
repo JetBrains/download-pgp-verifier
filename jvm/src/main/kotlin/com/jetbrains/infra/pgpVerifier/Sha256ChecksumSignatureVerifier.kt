@@ -9,13 +9,21 @@ import java.security.MessageDigest
 object Sha256ChecksumSignatureVerifier {
     private val sha256WithFileNameRegex = Regex("([0-9a-f]{64})[\t ]+\\*?([a-zA-Z0-9_\\-.*]+)\\s*")
 
-    private fun getHashFromChecksumFile(detachedSignatureFile: Path, checksumFile: Path, expectedFileName: String, untrustedPublicKeyRing: InputStream, trustedMasterKey: InputStream): String {
+    private fun getHashFromChecksumFile(
+        detachedSignatureFile: Path,
+        checksumFile: Path,
+        expectedFileName: String,
+        untrustedPublicKeyRing: InputStream,
+        trustedMasterKey: InputStream,
+        logger: PgpSignaturesVerifierLogger,
+    ): String {
         Files.newInputStream(detachedSignatureFile).use { signatureStream ->
             PgpSignaturesVerifier.verifySignature(
                 file = checksumFile,
                 detachedSignatureInputStream = signatureStream,
                 untrustedPublicKeyBundleInputStream = untrustedPublicKeyRing,
                 trustedMasterKeyInputStream = trustedMasterKey,
+                logger = logger,
             )
         }
 
@@ -31,8 +39,13 @@ object Sha256ChecksumSignatureVerifier {
     }
 
     fun verifyChecksumAndSignature(
-        file: Path, detachedSignatureFile: Path, checksumFile: Path, expectedFileName: String,
-        untrustedPublicKeyRing: InputStream, trustedMasterKey: InputStream
+        file: Path,
+        detachedSignatureFile: Path,
+        checksumFile: Path,
+        expectedFileName: String,
+        untrustedPublicKeyRing: InputStream,
+        trustedMasterKey: InputStream,
+        logger: PgpSignaturesVerifierLogger,
     ) {
         val expectedHash = getHashFromChecksumFile(
             detachedSignatureFile = detachedSignatureFile,
@@ -40,6 +53,7 @@ object Sha256ChecksumSignatureVerifier {
             expectedFileName = expectedFileName,
             untrustedPublicKeyRing = untrustedPublicKeyRing,
             trustedMasterKey = trustedMasterKey,
+            logger = logger,
         )
 
         val actualByteHash = getFileDigest(file, MessageDigest.getInstance("SHA-256"))
