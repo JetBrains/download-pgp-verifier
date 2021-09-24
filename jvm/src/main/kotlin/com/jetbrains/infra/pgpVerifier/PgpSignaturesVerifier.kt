@@ -141,6 +141,7 @@ class PgpSignaturesVerifier(private val logger: PgpSignaturesVerifierLogger) {
         for (signature in subKey.keySignatures) {
             if (signature !is PGPSignature) continue
             if (signature.signatureType != PGPSignature.SUBKEY_BINDING) continue
+            if (signature.keyID != masterKey.keyID) continue
             if (!isSignKey(signature)) continue
 
             val signatureCheckError = checkSignatureFormat(signature)
