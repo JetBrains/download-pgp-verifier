@@ -1,11 +1,19 @@
 package com.jetbrains.infra.pgpVerifier
 
+import org.bouncycastle.bcpg.ArmoredInputStream
+import org.bouncycastle.bcpg.ArmoredOutputStream
+import org.bouncycastle.bcpg.BCPGInputStream
+import org.bouncycastle.bcpg.PublicKeyPacket
+import org.bouncycastle.openpgp.PGPPublicKeyRingCollection
+import org.bouncycastle.openpgp.PGPUtil
+import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.net.URL
 import java.nio.file.Files
 import java.util.stream.Stream
@@ -23,12 +31,21 @@ class PgpSignatureVerifierTest {
         Files.newInputStream(signature).use { signatureStream ->
             Files.newInputStream(publicKeys).use { publicKeysStream ->
                 Files.newInputStream(masterPublicKey).use { masterPublicKeyStream ->
+                    // masterPublicKey contains a public key + user id + signatures. extract master key only
+                    val masterPublicKeyOnlyBytes = BCPGInputStream(ArmoredInputStream(masterPublicKeyStream)).use {
+                        it.readPacket() as PublicKeyPacket
+                    }.encoded
+
+                    val masterPublicKeyOnlyArmoredBytes = ByteArrayOutputStream().also {
+                        ArmoredOutputStream(it).use { armored -> armored.write(masterPublicKeyOnlyBytes) }
+                    }.toByteArray()
+
                     val result = try {
                         PgpSignaturesVerifier.verifySignature(
                             file = data,
                             detachedSignatureInputStream = signatureStream,
                             untrustedPublicKeyBundleInputStream = publicKeysStream,
-                            trustedMasterKeyInputStream = masterPublicKeyStream,
+                            trustedMasterKeyInputStream = ByteArrayInputStream(masterPublicKeyOnlyArmoredBytes),
                         )
                         true
                     } catch (_: Throwable) {
@@ -70,9 +87,23 @@ class PgpSignatureVerifierTest {
 
     @Test
     fun equalMasterPublicKeyTest() {
+        val trustedMasterKeyText = Files.readString(TestUtil.getTestDataFile(RealMasterPublicKey))
+        val trustedMasterKeyRingCollection = PGPPublicKeyRingCollection(
+            PGPUtil.getDecoderStream(ByteArrayInputStream(trustedMasterKeyText.toByteArray())),
+            JcaKeyFingerprintCalculator()
+        )
+        val trustedMasterKeyRing = trustedMasterKeyRingCollection.singleOrNull()
+            ?: error("Only one key ring should be in trustedMasterKeyInputStream")
+        val trustedMasterKey2 = trustedMasterKeyRing.publicKeys.asSequence().toList().singleOrNull()
+            ?: error("Only one key should be in trustedMasterKeyRing")
+
+        val os = ByteArrayOutputStream()
+        ArmoredOutputStream(os).use { it.write(trustedMasterKey2.publicKeyPacket.encoded) }
+        val trustedMasterPublicKeyText = os.toByteArray().decodeToString()
+
         Assertions.assertEquals(
-            JetBrainsPgpConstants.JETBRAINS_DOWNLOADS_PGP_MASTER_PUBLIC_KEY.replace("\r", ""),
-            Files.readString(TestUtil.getTestDataFile(RealMasterPublicKey)).replace("\r", "")
+            JetBrainsPgpConstants.JETBRAINS_DOWNLOADS_PGP_MASTER_PUBLIC_KEY.replace("\r", "").trim(),
+            trustedMasterPublicKeyText.replace("\r", "").trim()
         )
     }
 

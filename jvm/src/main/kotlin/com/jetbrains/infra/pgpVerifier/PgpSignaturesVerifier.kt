@@ -1,10 +1,18 @@
 package com.jetbrains.infra.pgpVerifier
 
+import org.bouncycastle.bcpg.ArmoredInputStream
+import org.bouncycastle.bcpg.BCPGInputStream
 import org.bouncycastle.bcpg.HashAlgorithmTags
 import org.bouncycastle.bcpg.PublicKeyAlgorithmTags
+import org.bouncycastle.bcpg.PublicKeyPacket
 import org.bouncycastle.bcpg.sig.KeyFlags
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.bouncycastle.openpgp.*
+import org.bouncycastle.openpgp.PGPCompressedData
+import org.bouncycastle.openpgp.PGPPublicKey
+import org.bouncycastle.openpgp.PGPPublicKeyRingCollection
+import org.bouncycastle.openpgp.PGPSignature
+import org.bouncycastle.openpgp.PGPSignatureList
+import org.bouncycastle.openpgp.PGPUtil
 import org.bouncycastle.openpgp.jcajce.JcaPGPObjectFactory
 import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator
 import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentVerifierBuilderProvider
@@ -82,16 +90,21 @@ object PgpSignaturesVerifier {
     }
 
     private fun getTrustedMasterKey(trustedMasterKeyInputStream: InputStream): PGPPublicKey {
-        val trustedMasterKeyRingCollection = PGPPublicKeyRingCollection(
-            PGPUtil.getDecoderStream(trustedMasterKeyInputStream),
-            JcaKeyFingerprintCalculator()
-        )
-        val trustedMasterKeyRing = trustedMasterKeyRingCollection.singleOrNull()
-            ?: error("Only one key ring should be in trustedMasterKeyInputStream")
-        val trustedMasterKey = trustedMasterKeyRing.publicKeys.asSequence().toList().singleOrNull()
-            ?: error("Only one key should be in trustedMasterKeyRing")
+        val publicKeyPacket = BCPGInputStream(ArmoredInputStream(trustedMasterKeyInputStream)).use {
+            val packet = it.readPacket() as PublicKeyPacket
+
+            val rest = it.readAllBytes()
+            if (rest.isNotEmpty()) {
+                error("Some leftovers in the stream after reading PublicKeyPacket")
+            }
+
+            packet
+        }
+
+        val trustedMasterKey = PGPPublicKey(publicKeyPacket, JcaKeyFingerprintCalculator())
         require(trustedMasterKey.isMasterKey) { "Key ${trustedMasterKey.keyID.toKeyIdString()} must be a master key" }
         assertPublicKeyFormat(trustedMasterKey)
+
         return trustedMasterKey
     }
 
