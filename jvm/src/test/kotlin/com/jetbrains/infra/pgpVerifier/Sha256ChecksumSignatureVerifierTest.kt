@@ -52,14 +52,14 @@ class Sha256ChecksumSignatureVerifierTest {
     }
 
     private fun runTest(detachedSignatureFileName: String, checksumFile: String? = null) {
-        Sha256ChecksumSignatureVerifier.verifyChecksumAndSignature(
+        val pgpVerifier = PgpSignaturesVerifier(TestPgpSignaturesVerifierLogger)
+        Sha256ChecksumSignatureVerifier(pgpVerifier).verifyChecksumAndSignature(
             file = TestUtil.getTestDataFile("lorem-ipsum.txt"),
             detachedSignatureFile = TestUtil.getTestDataFile(detachedSignatureFileName),
             checksumFile = TestUtil.getTestDataFile(checksumFile ?: "lorem-ipsum.txt.sha256"),
             expectedFileName = "lorem-ipsum.txt",
             untrustedPublicKeyRing = ByteArrayInputStream(TestUtil.getTestDataBytes(PgpSignatureVerifierTest.RealPublicKeys)),
             trustedMasterKey = ByteArrayInputStream(JetBrainsPgpConstants.JETBRAINS_DOWNLOADS_PGP_MASTER_PUBLIC_KEY.toByteArray()),
-            logger = TestPgpSignaturesVerifierLogger,
         )
     }
 }

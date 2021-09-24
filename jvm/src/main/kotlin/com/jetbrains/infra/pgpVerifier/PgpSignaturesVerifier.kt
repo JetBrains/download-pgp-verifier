@@ -21,7 +21,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 
-object PgpSignaturesVerifier {
+class PgpSignaturesVerifier(private val logger: PgpSignaturesVerifierLogger) {
     private val bouncyCastleProvider = BouncyCastleProvider()
 
     fun verifySignature(
@@ -29,7 +29,6 @@ object PgpSignaturesVerifier {
         detachedSignatureInputStream: InputStream,
         untrustedPublicKeyBundleInputStream: InputStream,
         trustedMasterKeyInputStream: InputStream,
-        logger: PgpSignaturesVerifierLogger,
     ) {
         val signatures = getSignaturesFromFile(detachedSignatureInputStream)
         val untrustedPublicKeyRingCollection = PGPPublicKeyRingCollection(

@@ -41,12 +41,12 @@ class PgpSignatureVerifierTest {
                     }.toByteArray()
 
                     val result = try {
-                        PgpSignaturesVerifier.verifySignature(
+                        val verifier = PgpSignaturesVerifier(TestPgpSignaturesVerifierLogger)
+                        verifier.verifySignature(
                             file = data,
                             detachedSignatureInputStream = signatureStream,
                             untrustedPublicKeyBundleInputStream = publicKeysStream,
                             trustedMasterKeyInputStream = ByteArrayInputStream(masterPublicKeyOnlyArmoredBytes),
-                            logger = TestPgpSignaturesVerifierLogger,
                         )
                         true
                     } catch (_: Throwable) {
@@ -69,12 +69,12 @@ class PgpSignatureVerifierTest {
             ByteArrayInputStream(realSubKeys).use { publicKeysStream ->
                 ByteArrayInputStream(JetBrainsPgpConstants.JETBRAINS_DOWNLOADS_PGP_MASTER_PUBLIC_KEY.toByteArray()).use { masterPublicKeyStream ->
                     val result = try {
-                        PgpSignaturesVerifier.verifySignature(
+                        val verifier = PgpSignaturesVerifier(TestPgpSignaturesVerifierLogger)
+                        verifier.verifySignature(
                             file = data,
                             detachedSignatureInputStream = signatureStream,
                             untrustedPublicKeyBundleInputStream = publicKeysStream,
                             trustedMasterKeyInputStream = masterPublicKeyStream,
-                            logger = TestPgpSignaturesVerifierLogger,
                         )
                         true
                     } catch (_: Throwable) {
