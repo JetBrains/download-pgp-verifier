@@ -42,6 +42,7 @@ class PgpSignatureVerifierTest {
 
                     val result = try {
                         val verifier = PgpSignaturesVerifier(TestPgpSignaturesVerifierLogger)
+                        verifier.setCurrentTimeProvider { TestUtil.testInstant }
                         verifier.verifySignature(
                             file = data,
                             detachedSignatureInputStream = signatureStream,
@@ -70,6 +71,7 @@ class PgpSignatureVerifierTest {
                 ByteArrayInputStream(JetBrainsPgpConstants.JETBRAINS_DOWNLOADS_PGP_MASTER_PUBLIC_KEY.toByteArray()).use { masterPublicKeyStream ->
                     val result = try {
                         val verifier = PgpSignaturesVerifier(TestPgpSignaturesVerifierLogger)
+                        verifier.setCurrentTimeProvider { TestUtil.testInstant }
                         verifier.verifySignature(
                             file = data,
                             detachedSignatureInputStream = signatureStream,
@@ -77,7 +79,8 @@ class PgpSignatureVerifierTest {
                             trustedMasterKeyInputStream = masterPublicKeyStream,
                         )
                         true
-                    } catch (_: Throwable) {
+                    } catch (t: Throwable) {
+                        println(t.stackTraceToString())
                         false
                     }
 

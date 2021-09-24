@@ -2,8 +2,12 @@ package com.jetbrains.infra.pgpVerifier
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.Instant
+import java.time.ZonedDateTime
 
 object TestUtil {
+    val testInstant: Instant = ZonedDateTime.parse("2021-09-24T20:26:22+00:00").toInstant()
+
     fun getTestDataFile(name: String): Path {
         val projectRoot = getProjectRootFromWorkingDirectory()
         val testDataFile = projectRoot.parent.resolve("data").resolve(name)

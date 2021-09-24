@@ -53,6 +53,7 @@ class Sha256ChecksumSignatureVerifierTest {
 
     private fun runTest(detachedSignatureFileName: String, checksumFile: String? = null) {
         val pgpVerifier = PgpSignaturesVerifier(TestPgpSignaturesVerifierLogger)
+        pgpVerifier.setCurrentTimeProvider { TestUtil.testInstant }
         Sha256ChecksumSignatureVerifier(pgpVerifier).verifyChecksumAndSignature(
             file = TestUtil.getTestDataFile("lorem-ipsum.txt"),
             detachedSignatureFile = TestUtil.getTestDataFile(detachedSignatureFileName),

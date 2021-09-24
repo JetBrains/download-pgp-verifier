@@ -5,6 +5,7 @@ import org.bouncycastle.bcpg.BCPGInputStream
 import org.bouncycastle.bcpg.HashAlgorithmTags
 import org.bouncycastle.bcpg.PublicKeyAlgorithmTags
 import org.bouncycastle.bcpg.PublicKeyPacket
+import org.bouncycastle.bcpg.SignatureSubpacketTags
 import org.bouncycastle.bcpg.sig.KeyFlags
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.bouncycastle.openpgp.PGPCompressedData
@@ -16,13 +17,18 @@ import org.bouncycastle.openpgp.PGPUtil
 import org.bouncycastle.openpgp.jcajce.JcaPGPObjectFactory
 import org.bouncycastle.openpgp.operator.jcajce.JcaKeyFingerprintCalculator
 import org.bouncycastle.openpgp.operator.jcajce.JcaPGPContentVerifierBuilderProvider
+import org.jetbrains.annotations.TestOnly
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
+import java.time.Duration
+import java.time.Instant
 
 
 class PgpSignaturesVerifier(private val logger: PgpSignaturesVerifierLogger) {
     private val bouncyCastleProvider = BouncyCastleProvider()
+
+    private var currentTimeProvider = { Instant.now() }
 
     fun verifySignature(
         file: Path,
@@ -36,6 +42,7 @@ class PgpSignaturesVerifier(private val logger: PgpSignaturesVerifierLogger) {
             JcaKeyFingerprintCalculator()
         )
         val trustedMasterKey = getTrustedMasterKey(trustedMasterKeyInputStream)
+        val currentInstant = currentTimeProvider()
 
         var verified = false
 
@@ -53,7 +60,7 @@ class PgpSignaturesVerifier(private val logger: PgpSignaturesVerifierLogger) {
                 logger.info("Key skipped: $keyCheckError")
                 continue
             }
-            if (!isSubKeyForSigning(key, trustedMasterKey, logger)) {
+            if (!isSubKeyForSigning(key, trustedMasterKey, currentInstant, logger)) {
                 continue
             }
             if (isRevoked(key, signature)) {
@@ -134,7 +141,7 @@ class PgpSignaturesVerifier(private val logger: PgpSignaturesVerifierLogger) {
         return false
     }
 
-    private fun isSubKeyForSigning(subKey: PGPPublicKey, masterKey: PGPPublicKey, logger: PgpSignaturesVerifierLogger): Boolean {
+    private fun isSubKeyForSigning(subKey: PGPPublicKey, masterKey: PGPPublicKey, currentInstant: Instant, logger: PgpSignaturesVerifierLogger): Boolean {
         require(masterKey.isMasterKey) { "Key ${masterKey.keyID.toKeyIdString()} must be a master key" }
         require(!subKey.isMasterKey) { "Key ${subKey.keyID.toKeyIdString()} must be a sub key" }
 
@@ -146,7 +153,13 @@ class PgpSignaturesVerifier(private val logger: PgpSignaturesVerifierLogger) {
 
             val signatureCheckError = checkSignatureFormat(signature)
             if (signatureCheckError != null) {
-                logger.info("Signature for key '${subKey.keyID.toKeyIdString()}' was skipped: $signatureCheckError")
+                logger.info("Signature for key '${subKey.keyID.toKeyIdString()}' was skipped due to wrong format: $signatureCheckError")
+                continue
+            }
+
+            val expirationCheckError = checkExpiration(signature, currentInstant)
+            if (expirationCheckError != null) {
+                logger.info("Signature for key '${subKey.keyID.toKeyIdString()}' was skipped due to expiration issue: $expirationCheckError")
                 continue
             }
 
@@ -160,6 +173,38 @@ class PgpSignaturesVerifier(private val logger: PgpSignaturesVerifierLogger) {
     }
 
     private fun isSignKey(sig: PGPSignature): Boolean = (sig.hashedSubPackets.keyFlags and KeyFlags.SIGN_DATA) != 0
+
+    private fun checkExpiration(signature: PGPSignature, currentInstant: Instant): String? {
+        if (!signature.hashedSubPackets.hasSubpacket(SignatureSubpacketTags.KEY_EXPIRE_TIME)) {
+            return "Expiration is missing in signature"
+        }
+
+        val keyLifetimeSeconds = signature.hashedSubPackets.keyExpirationTime
+        when {
+            keyLifetimeSeconds < 0L -> return "Invalid 'keyExpirationTime' in signature: $keyLifetimeSeconds"
+            keyLifetimeSeconds == 0L -> return "Signature must have an expiration"
+        }
+
+        val keyLifetimeDuration = Duration.ofSeconds(keyLifetimeSeconds)
+        if (keyLifetimeDuration > Duration.ofDays(6 * 365L)) {
+            return "Signature expiration must not be more than 6 years"
+        }
+
+        val creationInstant = signature.creationTime.toInstant()
+        if (currentInstant.isBefore(creationInstant)) {
+            return "Signature creation time must be in the past"
+        }
+        if (Duration.between(creationInstant, currentInstant) > Duration.ofDays(30 * 365L)) {
+            return "Signature created more than 30 years in the past, this is not supported"
+        }
+
+        val keyExpirationInstant = creationInstant + keyLifetimeDuration
+        if (keyExpirationInstant < currentInstant) {
+            return "Signature expired"
+        }
+
+        return null
+    }
 
     private fun checkPublicKeyFormat(key: PGPPublicKey): String? {
         if (key.version != 4) {
@@ -193,4 +238,9 @@ class PgpSignaturesVerifier(private val logger: PgpSignaturesVerifierLogger) {
     }
 
     private fun Long.toKeyIdString(): String = java.lang.Long.toHexString(this).uppercase()
+
+    @TestOnly
+    internal fun setCurrentTimeProvider(timeProvider: () -> Instant) {
+        currentTimeProvider = timeProvider
+    }
 }
