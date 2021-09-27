@@ -10,6 +10,8 @@
     <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.10.0" />
     <ProjectReference Include="..\JetBrains.DownloadPgpVerifier\JetBrains.DownloadPgpVerifier.csproj" />
-    <EmbeddedResource Include="..\..\data\*" LinkBase="Resources" />
+    <EmbeddedResource Include="..\..\data\real-*" LinkBase="Resources" />
+    <EmbeddedResource Include="..\..\data\test-*" LinkBase="Resources" />
+    <EmbeddedResource Include="..\..\data\fail-*" LinkBase="Resources" />
   </ItemGroup>
 </Project>

@@ -1,0 +1,1 @@
+Please use `gpg --list-packets --verbose <file>` to dump keys and signatures.
