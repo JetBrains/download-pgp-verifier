@@ -16,27 +16,27 @@ namespace JetBrains.DownloadPgpVerifier.Tests
       return type.Assembly.OpenStreamFromResource(type.Namespace + ".Resources." + resourceName, handler);
     }
 
-    [TestCase(RealMasterPublicKey, RealPublicKeys, RealSignature0Asc, RealData0, true)]
-    [TestCase(RealMasterPublicKey, RealPublicKeys, RealSignature1Asc, RealData1, true)]
-    [TestCase(RealMasterPublicKey, RealPublicKeys, RealSignature0Gpg, RealData0, true)]
-    [TestCase(RealMasterPublicKey, RealPublicKeys, RealSignature1Gpg, RealData1, true)]
+    [TestCase(RealMasterPublicKey, RealPublicKeys, RealSignature0Asc, RealData0)]
+    [TestCase(RealMasterPublicKey, RealPublicKeys, RealSignature1Asc, RealData1)]
+    [TestCase(RealMasterPublicKey, RealPublicKeys, RealSignature0Gpg, RealData0)]
+    [TestCase(RealMasterPublicKey, RealPublicKeys, RealSignature1Gpg, RealData1)]
     [TestCase(RealMasterPublicKey, RealPublicKeys, RealSignature0Asc, FailData, false)]
-    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature0Asc, TestData0, true)]
-    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature1Asc, TestData1, true)]
-    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature2Asc, TestData2, true)]
-    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature3Asc, TestData3, true)]
-    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature0Gpg, TestData0, true)]
-    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature1Gpg, TestData1, true)]
-    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature2Gpg, TestData2, true)]
-    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature3Gpg, TestData3, true)]
+    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature0Asc, TestData0)]
+    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature1Asc, TestData1)]
+    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature2Asc, TestData2)]
+    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature3Asc, TestData3)]
+    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature0Gpg, TestData0)]
+    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature1Gpg, TestData1)]
+    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature2Gpg, TestData2)]
+    [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature3Gpg, TestData3)]
     [TestCase(TestMasterPublicKey, TestNoRevokePublicKeys, TestSignature0Asc, FailData, false)]
-    [TestCase(TestMasterPublicKey, TestTwoRevokePublicKeys, TestSignature0Asc, TestData0, true)]
-    [TestCase(TestMasterPublicKey, TestTwoRevokePublicKeys, TestSignature1Asc, TestData1, true)]
-    [TestCase(TestMasterPublicKey, TestTwoRevokePublicKeys, TestSignature2Asc, TestData2, true)]
+    [TestCase(TestMasterPublicKey, TestTwoRevokePublicKeys, TestSignature0Asc, TestData0)]
+    [TestCase(TestMasterPublicKey, TestTwoRevokePublicKeys, TestSignature1Asc, TestData1)]
+    [TestCase(TestMasterPublicKey, TestTwoRevokePublicKeys, TestSignature2Asc, TestData2)]
     [TestCase(TestMasterPublicKey, TestTwoRevokePublicKeys, TestSignature3Asc, TestData3, false)]
     [TestCase(FailMasterPublicKey, RealPublicKeys, RealSignature0Asc, RealData0, false)]
     [TestCase(FailMasterPublicKey, TestNoRevokePublicKeys, TestSignature0Asc, TestData0, false)]
-    public void VerifyTest(string masterPublicKeyResourceName, string publicKeysResourceName, string signatureResourceName, string dataResourceName, bool expectedResult)
+    public void VerifyTest(string masterPublicKeyResourceName, string publicKeysResourceName, string signatureResourceName, string dataResourceName, bool expectedResult = true)
     {
       var result = StreamFromResource(masterPublicKeyResourceName,
         masterPublicKeyStream => StreamFromResource(publicKeysResourceName,
@@ -56,12 +56,12 @@ namespace JetBrains.DownloadPgpVerifier.Tests
         }));
     }
 
-    [TestCase(RealSignature0Asc, RealData0, true)]
-    [TestCase(RealSignature1Asc, RealData1, true)]
-    [TestCase(RealSignature0Gpg, RealData0, true)]
-    [TestCase(RealSignature1Gpg, RealData1, true)]
+    [TestCase(RealSignature0Asc, RealData0)]
+    [TestCase(RealSignature1Asc, RealData1)]
+    [TestCase(RealSignature0Gpg, RealData0)]
+    [TestCase(RealSignature1Gpg, RealData1)]
     [TestCase(RealSignature0Asc, FailData, false)]
-    public void DownloadVerifyTest(string signatureResourceName, string dataResourceName, bool expectedResult)
+    public void DownloadVerifyTest(string signatureResourceName, string dataResourceName, bool expectedResult = true)
     {
       var result = PgpSignaturesVerifier.MasterPublicKey.OpenStreamFromString(
         masterPublicKeyStream => PgpSignaturesVerifier.PublicKeysUri.OpenSeekableStreamFromWeb(

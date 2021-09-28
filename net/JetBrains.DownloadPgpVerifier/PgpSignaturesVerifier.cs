@@ -31,21 +31,27 @@ namespace JetBrains.DownloadPgpVerifier
       var publicKeyRingBundle = GetUntrustedPublicKeyRingBundle(publicKeysStream);
       var buffer = new byte[16 * 1024];
       foreach (var signature in GetSignatures(signaturesStream))
-        if (signature.SignatureType is PgpSignature.BinaryDocument or PgpSignature.CanonicalTextDocument)
+        if (signature.SignatureType is PgpSignature.BinaryDocument)
         {
-          if (!CheckSignatureFormat(signature, x => logger.Warning("The signature was skipped: " + x)))
+          void LogWarning([NotNull] string str) => logger.Warning($"The signature SignKeyID={signature.KeyId:X16} was skipped: {str}");
+
+          if (!CheckSignatureFormat(signature, LogWarning))
             continue;
 
           var publicKey = publicKeyRingBundle.GetPublicKey(signature.KeyId);
           if (publicKey == null)
+          {
+            LogWarning("No public key for signature");
             continue;
-          if (!CheckPublicKeyFormat(publicKey, x => logger.Warning("The subkey was skipped: " + x)))
+          }
+
+          if (!CheckPublicKeyFormat(publicKey, LogWarning))
             continue;
 
-          if (!IsSubKeyForSigning(masterPublicKey, publicKey, x => logger.Warning("The subkey was skipped: " + x)))
+          if (!IsSubKeyForSigning(masterPublicKey, publicKey, LogWarning))
             continue;
 
-          if (!CheckRevoked(publicKey, signature, x => logger.Warning("The subkey was skipped: " + x)))
+          if (!IsSubKeyRevoked(masterPublicKey, publicKey, signature, LogWarning))
             continue;
 
           signature.InitVerify(publicKey);
@@ -60,11 +66,11 @@ namespace JetBrains.DownloadPgpVerifier
 
           if (!signature.Verify())
           {
-            logger.Warning($"The signature was skipped: Invalid verification. SignKetID={signature.KeyId:X16}");
+            LogWarning("Invalid signature verification.");
             continue;
           }
 
-          logger.Info($"Success for SignKetID={signature.KeyId:X16}");
+          logger.Info($"Success for SignKeyID={signature.KeyId:X16}");
           return true;
         }
 
@@ -124,21 +130,11 @@ namespace JetBrains.DownloadPgpVerifier
       throw new Exception("No PGP signature was found");
     }
 
-    private static bool CheckRevoked(PgpPublicKey publicKey, PgpSignature signature, Action<string> onError)
-    {
-      foreach (PgpSignature revocationSignature in publicKey.GetSignatures())
-        if (revocationSignature.SignatureType == PgpSignature.SubkeyRevocation)
-          if (revocationSignature.CreationTime <= signature.CreationTime)
-          {
-            onError($"The signature for SignKeyID={signature.KeyId:X16} was revoked");
-            return false;
-          }
-
-      return true;
-    }
-
     private static bool IsSubKeyForSigning([NotNull] PgpPublicKey masterPublicKey, [NotNull] PgpPublicKey publicKey, [NotNull] Action<string> onError)
     {
+      if (masterPublicKey == null) throw new ArgumentNullException(nameof(masterPublicKey));
+      if (publicKey == null) throw new ArgumentNullException(nameof(publicKey));
+      if (onError == null) throw new ArgumentNullException(nameof(onError));
       if (!masterPublicKey.IsMasterKey)
         throw new Exception($"Master key is required. KeyID={masterPublicKey.KeyId:X16}");
       if (publicKey.IsMasterKey)
@@ -147,15 +143,47 @@ namespace JetBrains.DownloadPgpVerifier
       foreach (PgpSignature signature in publicKey.GetKeySignatures())
         if (signature.SignatureType == PgpSignature.SubkeyBinding)
           if ((signature.GetHashedSubPackets().GetKeyFlags() & KeyFlags.SignData) != 0)
-            if (CheckSignatureFormat(signature, _ => { }))
+            if (CheckSignatureFormat(signature, onError))
             {
               signature.InitVerify(masterPublicKey);
               if (signature.VerifyCertification(masterPublicKey, publicKey))
                 return true;
+              onError($"Failed to verify the certification of the signature MasterKeyID={masterPublicKey.KeyId:X16} SubKeyID={publicKey.KeyId:X16}");
             }
 
       onError($"Incompatible keys MasterKeyID={masterPublicKey.KeyId:X16} SubKeyID={publicKey.KeyId:X16}");
       return false;
+    }
+
+    private static bool IsSubKeyRevoked([NotNull] PgpPublicKey masterPublicKey, [NotNull] PgpPublicKey publicKey, [NotNull] PgpSignature signature, [NotNull] Action<string> onError)
+    {
+      if (masterPublicKey == null) throw new ArgumentNullException(nameof(masterPublicKey));
+      if (publicKey == null) throw new ArgumentNullException(nameof(publicKey));
+      if (signature == null) throw new ArgumentNullException(nameof(signature));
+      if (onError == null) throw new ArgumentNullException(nameof(onError));
+      if (!masterPublicKey.IsMasterKey)
+        throw new Exception($"Master key is required. KeyID={masterPublicKey.KeyId:X16}");
+      if (publicKey.IsMasterKey)
+        throw new Exception($"Sub key is required. KeyID={publicKey.KeyId:X16}");
+      foreach (PgpSignature revocationSignature in publicKey.GetSignatures())
+        if (revocationSignature.SignatureType == PgpSignature.SubkeyRevocation)
+          if (CheckSignatureFormat(revocationSignature, onError))
+          {
+            revocationSignature.InitVerify(masterPublicKey);
+            if (!revocationSignature.VerifyCertification(masterPublicKey, publicKey))
+            {
+              onError($"Failed to verify the certification of the revocation signature MasterKeyID={masterPublicKey.KeyId:X16} SubKeyID={publicKey.KeyId:X16}");
+              return false;
+            }
+
+            if (revocationSignature.CreationTime <= signature.CreationTime)
+            {
+              onError($"The signature for SignKeyID={signature.KeyId:X16} was revoked");
+              return false;
+            }
+          }
+
+      return true;
     }
 
     private static bool CheckSignatureFormat([NotNull] PgpSignature signature, [NotNull] Action<string> onError)
