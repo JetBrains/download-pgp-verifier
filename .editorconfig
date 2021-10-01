@@ -1,6 +1,14 @@
 root = true
 
 [*]
-end_of_line = lf
+trim_trailing_whitespace = true
+
+[*.cs]
 indent_style = space
-max_line_length = 200
+indent_size = 2
+end_of_line = crlf
+
+[*.kt]
+indent_style = space
+indent_size = 4
+end_of_line = lf
