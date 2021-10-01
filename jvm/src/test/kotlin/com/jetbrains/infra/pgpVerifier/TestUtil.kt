@@ -6,7 +6,7 @@ import java.nio.file.Paths
 object TestUtil {
     fun getTestDataFile(name: String): Path {
         val projectRoot = getProjectRootFromWorkingDirectory()
-        val testDataFile = projectRoot.parent.resolve("data").resolve(name)
+        val testDataFile = projectRoot.parent.resolve("data").resolve("pgp").resolve(name)
         if (Files.notExists(testDataFile)) {
             error("Test data file '$name' was not found at $testDataFile")
         }
