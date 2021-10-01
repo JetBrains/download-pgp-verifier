@@ -12,8 +12,7 @@
     <Copyright>Copyright © 2021 JetBrains s.r.o.</Copyright>
     <Authors>Mikhail Pilin</Authors>
     <Description>The download PGP signature verifier</Description>
-    <RepositoryUrl>https://git.jetbrains.team/dpgpv/download-pgp-verifier.git</RepositoryUrl>
-    <PackageProjectUrl>https://jetbrains.team/p/dpgpv</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jetbrains/download-pgp-verifier</RepositoryUrl>
     <Version>0.0.3</Version>
   </PropertyGroup>
   <ItemGroup>
