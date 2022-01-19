@@ -118,26 +118,81 @@ class PgpSignatureVerifierTest {
         private const val TestMasterPublicKey = "test-master-public-key.asc"
         private const val FailMasterPublicKey = "fail-master-public-key.asc"
 
+        /**
+         * The JetBrains public key chain list.
+         */
         const val RealPublicKeys = "real-public-keys.asc"
+
+        /**
+         * The test public key chain list, two sub-keys, no revocation.
+         */
         private const val TestNoRevokePublicKeys = "test-no-revoke-public-keys.asc"
+
+        /**
+         * The test public key chain list, both two sub-keys were revoked.
+         */
         private const val TestTwoRevokePublicKeys = "test-two-revoke-public-keys.asc"
 
+        /**
+         * The unknown data, no signature for it.
+         */
         private const val FailData = "fail-data.bin"
+
+        /**
+         * The data signed with [RealSignature0Asc]
+         */
         private const val RealData0 = "real-data.0.bin"
+
+        /**
+         * The data signed with [RealSignature1Asc]
+         */
         private const val RealData1 = "real-data.1.bin"
+
+        /**
+         * The data signed with [TestSignature0Asc]
+         */
         private const val TestData0 = "test-data.0.bin"
+
+        /**
+         * The data signed with [TestSignature1Asc]
+         */
         private const val TestData1 = "test-data.1.bin"
+
+        /**
+         * The data signed with [TestSignature2Asc]
+         */
         private const val TestData2 = "test-data.2.bin"
+
+        /**
+         * The data signed with [TestSignature3Asc]
+         */
         private const val TestData3 = "test-data.3.bin"
 
         private const val RealSignature0Asc = "real-signature.0.asc"
         private const val RealSignature1Asc = "real-signature.1.asc"
         private const val RealSignature0Gpg = "real-signature.0.gpg"
         private const val RealSignature1Gpg = "real-signature.1.gpg"
+
+        /**
+         * The test signature for [TestData0]. No keys were revoked in [TestTwoRevokePublicKeys] because signed earlier then the revocation time.
+         */
         private const val TestSignature0Asc = "test-signature.0.asc"
+
+        /**
+         * The test signature for [TestData1]. No keys were revoked in [TestTwoRevokePublicKeys] because signed earlier then the revocation time.
+         */
         private const val TestSignature1Asc = "test-signature.1.asc"
+
+        /**
+         * The test signature for [TestData2]. Only one key was revoked in [TestTwoRevokePublicKeys], so should be keep signed.
+         */
         private const val TestSignature2Asc = "test-signature.2.asc"
+
+        /**
+         * The test signature for [TestData3]" />. Both keys were revoked in [TestTwoRevokePublicKeys], so the signature should be invalid.
+         */
         private const val TestSignature3Asc = "test-signature.3.asc"
+
         private const val TestSignature0Gpg = "test-signature.0.gpg"
         private const val TestSignature1Gpg = "test-signature.1.gpg"
         private const val TestSignature2Gpg = "test-signature.2.gpg"
