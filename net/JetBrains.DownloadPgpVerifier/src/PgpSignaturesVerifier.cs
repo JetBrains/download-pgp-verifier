@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using JetBrains.Annotations;
 using Org.BouncyCastle.Bcpg;
 using Org.BouncyCastle.Bcpg.OpenPgp;
 using Org.BouncyCastle.Bcpg.Sig;
@@ -16,11 +15,11 @@ namespace JetBrains.DownloadPgpVerifier
     public static readonly Uri PublicKeysUri = new("https://download.jetbrains.com/KEYS");
 
     public static bool Verify(
-      [NotNull] Stream masterPublicKeyStream,
-      [NotNull] Stream publicKeysStream,
-      [NotNull] Stream signaturesStream,
-      [NotNull] Stream dataStream,
-      [NotNull] ILogger logger)
+      Stream masterPublicKeyStream,
+      Stream publicKeysStream,
+      Stream signaturesStream,
+      Stream dataStream,
+      ILogger logger)
     {
       if (dataStream == null) throw new ArgumentNullException(nameof(dataStream));
       if (logger == null) throw new ArgumentNullException(nameof(logger));
@@ -33,7 +32,7 @@ namespace JetBrains.DownloadPgpVerifier
       foreach (var signature in GetSignatures(signaturesStream))
         if (signature.SignatureType is PgpSignature.BinaryDocument)
         {
-          void LogWarning([NotNull] string str) => logger.Warning($"The signature SignKeyID={signature.KeyId:X16} was skipped: {str}");
+          void LogWarning(string str) => logger.Warning($"The signature SignKeyID={signature.KeyId:X16} was skipped: {str}");
 
           if (!CheckSignatureFormat(signature, LogWarning))
             continue;
@@ -78,8 +77,7 @@ namespace JetBrains.DownloadPgpVerifier
       return false;
     }
 
-    [NotNull]
-    private static PgpPublicKey GetTrustedMasterPublicKey([NotNull] Stream stream)
+    private static PgpPublicKey GetTrustedMasterPublicKey(Stream stream)
     {
       if (stream == null) throw new ArgumentNullException(nameof(stream));
       using var decodedStream = PgpUtilities.GetDecoderStream(stream);
@@ -92,16 +90,14 @@ namespace JetBrains.DownloadPgpVerifier
       return publicKey;
     }
 
-    [NotNull]
-    private static PgpPublicKeyRingBundle GetUntrustedPublicKeyRingBundle([NotNull] Stream stream)
+    private static PgpPublicKeyRingBundle GetUntrustedPublicKeyRingBundle(Stream stream)
     {
       if (stream == null) throw new ArgumentNullException(nameof(stream));
       using var decodedStream = PgpUtilities.GetDecoderStream(stream);
       return new PgpPublicKeyRingBundle(decodedStream);
     }
 
-    [NotNull]
-    private static IEnumerable<PgpSignature> GetSignatures([NotNull] Stream stream)
+    private static IEnumerable<PgpSignature> GetSignatures(Stream stream)
     {
       static IEnumerable<PgpSignature> ToEnumerable(PgpSignatureList list)
       {
@@ -130,7 +126,7 @@ namespace JetBrains.DownloadPgpVerifier
       throw new Exception("No PGP signature was found");
     }
 
-    private static bool IsSubKeyForSigning([NotNull] PgpPublicKey masterPublicKey, [NotNull] PgpPublicKey publicKey, [NotNull] Action<string> onError)
+    private static bool IsSubKeyForSigning(PgpPublicKey masterPublicKey, PgpPublicKey publicKey, Action<string> onError)
     {
       if (masterPublicKey == null) throw new ArgumentNullException(nameof(masterPublicKey));
       if (publicKey == null) throw new ArgumentNullException(nameof(publicKey));
@@ -155,7 +151,7 @@ namespace JetBrains.DownloadPgpVerifier
       return false;
     }
 
-    private static bool IsSubKeyRevoked([NotNull] PgpPublicKey masterPublicKey, [NotNull] PgpPublicKey publicKey, [NotNull] PgpSignature signature, [NotNull] Action<string> onError)
+    private static bool IsSubKeyRevoked(PgpPublicKey masterPublicKey, PgpPublicKey publicKey, PgpSignature signature, Action<string> onError)
     {
       if (masterPublicKey == null) throw new ArgumentNullException(nameof(masterPublicKey));
       if (publicKey == null) throw new ArgumentNullException(nameof(publicKey));
@@ -186,7 +182,7 @@ namespace JetBrains.DownloadPgpVerifier
       return true;
     }
 
-    private static bool CheckSignatureFormat([NotNull] PgpSignature signature, [NotNull] Action<string> onError)
+    private static bool CheckSignatureFormat(PgpSignature signature, Action<string> onError)
     {
       if (signature == null) throw new ArgumentNullException(nameof(signature));
       if (onError == null) throw new ArgumentNullException(nameof(onError));
@@ -207,7 +203,7 @@ namespace JetBrains.DownloadPgpVerifier
       return true;
     }
 
-    private static bool CheckPublicKeyFormat([NotNull] PgpPublicKey key, [NotNull] Action<string> onError)
+    private static bool CheckPublicKeyFormat(PgpPublicKey key, Action<string> onError)
     {
       if (key == null) throw new ArgumentNullException(nameof(key));
       if (onError == null) throw new ArgumentNullException(nameof(onError));
@@ -226,7 +222,6 @@ namespace JetBrains.DownloadPgpVerifier
       return true;
     }
 
-    [NotNull]
     private static string LoadMasterPublicKeyFromResources()
     {
       var type = typeof(PgpSignaturesVerifier);

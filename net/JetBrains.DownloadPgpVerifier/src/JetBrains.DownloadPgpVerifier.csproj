@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>JetBrains.DownloadPgpVerifier</RootNamespace>
+    <Nullable>enable</Nullable>
+    <LangVersion>10</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\..\key.snk</AssemblyOriginatorKeyFile>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <Company>JetBrains s.r.o.</Company>
+    <Copyright>Copyright © 2021-$([System.DateTime]::Now.ToString('yyyy')) JetBrains s.r.o.</Copyright>
+    <Authors>Mikhail Pilin</Authors>
+    <Description>The download PGP signature verifier</Description>
+    <RepositoryUrl>https://github.com/jetbrains/download-pgp-verifier</RepositoryUrl>
+    <PackageIcon>icon.png</PackageIcon>
+    <Version>1.0.0-preview1</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
+    <EmbeddedResource Include="..\..\..\data\pgp\real-master-public-key.asc" LinkBase="Resources" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="../../icon.png" Pack="true" Visible="false" PackagePath="" />
+  </ItemGroup>
+</Project>

@@ -3,20 +3,19 @@ using System.IO;
 using System.Net;
 using System.Reflection;
 using System.Text;
-using JetBrains.Annotations;
 
 namespace JetBrains.DownloadPgpVerifier
 {
   public static class OpenStreamUtil
   {
-    public static TResult OpenStreamFromString<TResult>([NotNull] this string str, [NotNull] Func<Stream, TResult> handler)
+    public static TResult OpenStreamFromString<TResult>(this string str, Func<Stream, TResult> handler)
     {
       if (handler == null) throw new ArgumentNullException(nameof(handler));
       using var stream = new MemoryStream(Encoding.UTF8.GetBytes(str), false);
       return handler(stream);
     }
 
-    public static TResult OpenStreamFromResource<TResult>([NotNull] this Assembly assembly, [NotNull] string resourceName, [NotNull] Func<Stream, TResult> handler)
+    public static TResult OpenStreamFromResource<TResult>(this Assembly assembly, string resourceName, Func<Stream, TResult> handler)
     {
       if (assembly == null) throw new ArgumentNullException(nameof(assembly));
       if (handler == null) throw new ArgumentNullException(nameof(handler));
@@ -26,7 +25,7 @@ namespace JetBrains.DownloadPgpVerifier
       return handler(stream);
     }
 
-    public static TResult OpenStreamFromWeb<TResult>([NotNull] this Uri uri, [NotNull] Func<Stream, TResult> handler)
+    public static TResult OpenStreamFromWeb<TResult>(this Uri uri, Func<Stream, TResult> handler)
     {
       if (handler == null) throw new ArgumentNullException(nameof(handler));
       var request = WebRequest.Create(uri);
@@ -38,7 +37,7 @@ namespace JetBrains.DownloadPgpVerifier
       return handler(responseStream);
     }
 
-    public static TResult OpenSeekableStreamFromWeb<TResult>([NotNull] this Uri uri, [NotNull] Func<Stream, TResult> handler)
+    public static TResult OpenSeekableStreamFromWeb<TResult>(this Uri uri, Func<Stream, TResult> handler)
     {
       return uri.OpenStreamFromWeb(responseStream =>
         {

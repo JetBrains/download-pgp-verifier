@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net461;netcoreapp3.1</TargetFrameworks>
+    <RootNamespace>JetBrains.DownloadPgpVerifier.Tests</RootNamespace>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <LangVersion>10</LangVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+    <ProjectReference Include="..\src\JetBrains.DownloadPgpVerifier.csproj" />
+    <EmbeddedResource Include="..\..\..\data\pgp\real-*" LinkBase="Resources" />
+    <EmbeddedResource Include="..\..\..\data\pgp\test-*" LinkBase="Resources" />
+    <EmbeddedResource Include="..\..\..\data\pgp\fail-*" LinkBase="Resources" />
+  </ItemGroup>
+</Project>

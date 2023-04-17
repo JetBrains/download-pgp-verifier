@@ -2,7 +2,6 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
-using JetBrains.Annotations;
 using NUnit.Framework;
 
 namespace JetBrains.DownloadPgpVerifier.Tests
@@ -10,7 +9,7 @@ namespace JetBrains.DownloadPgpVerifier.Tests
   [SuppressMessage("ReSharper", "InconsistentNaming")]
   public class PgpSignaturesVerifierTests
   {
-    private static TResult StreamFromResource<TResult>([NotNull] string resourceName, [NotNull] Func<Stream, TResult> handler)
+    private static TResult StreamFromResource<TResult>(string resourceName, Func<Stream, TResult> handler)
     {
       var type = typeof(PgpSignaturesVerifierTests);
       return type.Assembly.OpenStreamFromResource(type.Namespace + ".Resources." + resourceName, handler);
