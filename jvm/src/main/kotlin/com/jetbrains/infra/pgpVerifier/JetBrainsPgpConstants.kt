@@ -9,8 +9,7 @@ object JetBrainsPgpConstants {
     // NOTE: this is ArmoredOutputStream(ByteArrayOutputStream()).use { it.write(trustedMasterKey.publicKeyPacket.encoded) }
     val JETBRAINS_DOWNLOADS_PGP_MASTER_PUBLIC_KEY = """
         -----BEGIN PGP PUBLIC KEY BLOCK-----
-        Version: BCPG v1.69
-        
+
         mQGNBGBP58sBDADYRZmxLOkqrz0QZ/yESRpv7IeHGLqDE1a8QfFtFb14MJCLSAAS
         3nMD6Szi9mEjEqYdJURRcMjbUBhePgbhzGa3FYkjAB8lj6IKbu+ogCwVm1S8+caZ
         C6HNP1CIefa1wQgi/6FNWEBKbKefUr/DoG1fBAWUvTPC2BjiYOHDaU1xFWwhF3Np

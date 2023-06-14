@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = '1.5.21'
+    ext.kotlin_version = '1.8.20'
 
     repositories {
         mavenCentral()
@@ -17,8 +17,14 @@ repositories {
     mavenCentral()
 }
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+}
+
 dependencies {
-    implementation 'org.bouncycastle:bcpg-jdk15on:1.69'
+    implementation 'org.bouncycastle:bcpg-jdk18on:1.71'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     def junitVersion = "5.7.2"
@@ -42,7 +48,7 @@ publishing {
         mavenJava(MavenPublication) {
             groupId = 'com.jetbrains.infra'
             artifactId = 'download-pgp-verifier'
-            version = "1.0.$System.env.JB_SPACE_EXECUTION_NUMBER"
+            version = "1.1.$System.env.JB_SPACE_EXECUTION_NUMBER"
 
             from components.java
 
