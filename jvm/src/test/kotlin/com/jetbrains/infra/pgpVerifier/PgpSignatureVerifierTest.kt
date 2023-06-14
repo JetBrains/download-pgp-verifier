@@ -37,7 +37,10 @@ class PgpSignatureVerifierTest {
                     }.encoded
 
                     val masterPublicKeyOnlyArmoredBytes = ByteArrayOutputStream().also {
-                        ArmoredOutputStream(it).use { armored -> armored.write(masterPublicKeyOnlyBytes) }
+                        ArmoredOutputStream(it).apply {
+                            // remove BCPG Version
+                            clearHeaders()
+                        }.use { armored -> armored.write(masterPublicKeyOnlyBytes) }
                     }.toByteArray()
 
                     val result = try {
@@ -100,7 +103,10 @@ class PgpSignatureVerifierTest {
             ?: error("Only one key should be in trustedMasterKeyRing")
 
         val os = ByteArrayOutputStream()
-        ArmoredOutputStream(os).use { it.write(trustedMasterKey2.publicKeyPacket.encoded) }
+        ArmoredOutputStream(os).apply {
+            // remove BCPG Version
+            clearHeaders()
+        }.use { it.write(trustedMasterKey2.publicKeyPacket.encoded) }
         val trustedMasterPublicKeyText = os.toByteArray().decodeToString()
 
         Assertions.assertEquals(
