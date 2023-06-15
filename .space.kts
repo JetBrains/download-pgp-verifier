@@ -5,7 +5,7 @@
 */
 
 job("Build and run tests") {
-    container("openjdk:17") {
+    container("openjdk:17-bullseye") {
         workDir = "jvm"
         kotlinScript { api ->
             api.gradlew("--info", "build")
@@ -20,7 +20,7 @@ job("Publish to maven repository") {
         }
     }
 
-    container("openjdk:17") {
+    container("openjdk:17-bullseye") {
         workDir = "jvm"
         kotlinScript { api ->
             api.gradlew("--info", "publish")
