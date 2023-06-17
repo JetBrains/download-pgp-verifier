@@ -7,4 +7,5 @@
 Checks PGP signatures for JetBrains distributions
 
 See published JVM versions at: https://packages.jetbrains.team/maven/p/dpgpv/maven/com/jetbrains/infra/download-pgp-verifier/
+
 Maven repository: https://packages.jetbrains.team/maven/p/dpgpv/maven
