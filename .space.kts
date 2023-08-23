@@ -22,6 +22,10 @@ job("Publish to maven repository") {
 
     container("openjdk:17-bullseye") {
         workDir = "jvm"
+
+        env["INTELLIJ_DEPENDENCIES_PUBLICATION_CLIENT_ID"] = "{{ project:intellij-dependencies-publication-client-id }}"
+        env["INTELLIJ_DEPENDENCIES_PUBLICATION_CLIENT_SECRET"] = "{{ project:intellij-dependencies-publication-client-secret }}"
+
         kotlinScript { api ->
             api.gradlew("--info", "publish")
         }

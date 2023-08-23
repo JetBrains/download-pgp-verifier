@@ -68,13 +68,11 @@ publishing {
     repositories {
         maven {
             credentials {
-                // Automation has a special account for authentication in Space
-                // account credentials are accessible via env vars
-                username = "$System.env.JB_SPACE_CLIENT_ID"
-                password = "$System.env.JB_SPACE_CLIENT_SECRET"
+                username = "$System.env.INTELLIJ_DEPENDENCIES_PUBLICATION_CLIENT_ID"
+                password = "$System.env.INTELLIJ_DEPENDENCIES_PUBLICATION_CLIENT_SECRET"
             }
 
-            url "https://packages.jetbrains.team/maven/p/dpgpv/maven"
+            url "https://packages.jetbrains.team/maven/p/ij/intellij-dependencies"
         }
     }
 }
