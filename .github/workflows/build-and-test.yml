@@ -81,6 +81,8 @@ jobs:
         include:
           - os: linux
             arch: s390x
+          - os: freebsd
+            arch: amd64
 
     runs-on:
       - self-hosted
@@ -127,7 +129,7 @@ jobs:
       - name: Gradle Build
         uses: gradle/gradle-build-action@v2.5.1
         with:
-          arguments: test
+          arguments: test --stacktrace
           build-root-directory: ${{ github.workspace }}/jvm
       - name: Upload test results
         uses: actions/upload-artifact@v3
@@ -154,7 +156,7 @@ jobs:
         run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
       - name: Setup JDK and Tests under QEMU ${{ matrix.arch }}
         run: >
-          docker run --rm -e JAVA_OPTS="-Djdk.lang.Process.launchMechanism=vfork" -v ${PWD}:/home/gradle/project -w /home/gradle/project/jvm --platform linux/${{ matrix.arch }} gradle:jdk17 gradle test
+          docker run --rm -e JAVA_OPTS="-Djdk.lang.Process.launchMechanism=vfork" -v ${PWD}:/home/gradle/project -w /home/gradle/project/jvm --platform linux/${{ matrix.arch }} gradle:jdk17 gradle test --stacktrace
       - name: Upload test results
         uses: actions/upload-artifact@v3
         if: always()
@@ -172,6 +174,8 @@ jobs:
         include:
           - os: linux
             arch: s390x
+          - os: freebsd
+            arch: amd64
 
     runs-on:
       - self-hosted
@@ -186,7 +190,7 @@ jobs:
       - name: Gradle Build
         uses: gradle/gradle-build-action@v2.5.1
         with:
-          arguments: test
+          arguments: test --stacktrace
           build-root-directory: ${{ github.workspace }}/jvm
       - name: Upload test results
         uses: actions/upload-artifact@v3
