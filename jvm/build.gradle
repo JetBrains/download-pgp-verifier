@@ -27,7 +27,7 @@ dependencies {
     implementation 'org.bouncycastle:bcpg-jdk18on:1.71'
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
-    def junitVersion = "5.7.2"
+    def junitVersion = "5.8.2"
     testImplementation "org.junit.jupiter:junit-jupiter-params:$junitVersion"
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitVersion"
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitVersion"
