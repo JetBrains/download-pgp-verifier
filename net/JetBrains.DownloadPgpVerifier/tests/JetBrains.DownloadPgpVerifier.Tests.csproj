@@ -7,9 +7,9 @@
     <LangVersion>10</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="NUnit" Version="3.13.3" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <ProjectReference Include="..\src\JetBrains.DownloadPgpVerifier.csproj" />
     <EmbeddedResource Include="..\..\..\data\pgp\real-*" LinkBase="Resources" />
     <EmbeddedResource Include="..\..\..\data\pgp\test-*" LinkBase="Resources" />
