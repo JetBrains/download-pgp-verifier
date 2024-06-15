@@ -14,10 +14,10 @@
     <Description>The download PGP signature verifier</Description>
     <RepositoryUrl>https://github.com/jetbrains/download-pgp-verifier</RepositoryUrl>
     <PackageIcon>icon.png</PackageIcon>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <PackageReference Include="BouncyCastle.Cryptography" Version="2.4.0" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="All" />
     <EmbeddedResource Include="..\..\..\data\pgp\real-master-public-key.asc" LinkBase="Resources" />
   </ItemGroup>
